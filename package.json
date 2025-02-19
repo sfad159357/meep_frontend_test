@@ -1,0 +1,43 @@
+{
+  "name": "realtime-chat-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@heroicons/react": "^2.2.0",
+    "@mui/icons-material": "^6.4.4",
+    "@mui/material": "^6.4.4",
+    "clsx": "^2.0.0",
+    "date-fns": "^3.3.1",
+    "next": "^14.0.0",
+    "next-themes": "^0.4.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "14.0.0",
+    "image-webpack-loader": "^8.1.0",
+    "postcss": "^8.5.2",
+    "prettier": "^3.0.0",
+    "tailwindcss": "^3.4.17",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  }
+}
