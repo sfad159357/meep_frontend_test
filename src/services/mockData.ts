@@ -1,73 +1,66 @@
 import { Chat, Message, User } from '@/types';
+import chatData from '@/constant/chat_data.json';
 
-export const mockUsers: User[] = [
-  {
-    id: 'user-1',
-    name: 'John Doe',
-    avatar: '/assets/avatars/user-1.jpg',
-  },
-  {
-    id: 'user-2',
-    name: 'Jane Smith',
-    avatar: '/assets/avatars/user-2.jpg',
-  },
-  {
-    id: 'user-3',
-    name: 'Mike Johnson',
-    avatar: '/assets/avatars/user-3.jpg',
-  },
-];
+// 從聊天數據中提取唯一的用戶
+const extractUsers = (messages: any[]): User[] => {
+  const uniqueUsers = new Map();
+  
+  messages.forEach(msg => {
+    if (!uniqueUsers.has(msg.userId)) {
+      uniqueUsers.set(msg.userId, {
+        id: `user-${msg.userId}`,
+        name: msg.user,
+        avatar: msg.avatar
+      });
+    }
+  });
 
-export const mockMessages: Record<string, Message[]> = {
-  'chat-1': [
-    {
-      id: 'msg-1',
-      content: 'Hey, how are you?',
-      type: 'text',
-      senderId: 'user-1',
-      timestamp: Date.now() - 86400000, // 1 day ago
-      reactions: [],
-    },
-    {
-      id: 'msg-2',
-      content: "I'm good, thanks! How about you?",
-      type: 'text',
-      senderId: 'user-2',
-      timestamp: Date.now() - 82800000, // 23 hours ago
-      reactions: [
-        {
-          id: 'reaction-1',
-          type: 'like',
-          userId: 'user-1',
-        },
-      ],
-    },
-  ],
-  'chat-2': [
-    {
-      id: 'msg-3',
-      content: 'Did you see the new project requirements?',
-      type: 'text',
-      senderId: 'user-3',
-      timestamp: Date.now() - 3600000, // 1 hour ago
-      reactions: [],
-    },
-  ],
+  return Array.from(uniqueUsers.values());
 };
 
-export const mockChats: Chat[] = [
-  {
-    id: 'chat-1',
-    participants: [mockUsers[0], mockUsers[1]],
-    messages: mockMessages['chat-1'],
-    lastMessage: mockMessages['chat-1'][mockMessages['chat-1'].length - 1],
-    updatedAt: mockMessages['chat-1'][mockMessages['chat-1'].length - 1].timestamp,
-  },
-  {
-    id: 'chat-2',
-    participants: [mockUsers[0], mockUsers[2]],
-    messages: mockMessages['chat-2'],
-    lastMessage: mockMessages['chat-2'][mockMessages['chat-2'].length - 1],
-    updatedAt: mockMessages['chat-2'][mockMessages['chat-2'].length - 1].timestamp,
-  },
-]; 
+// 將消息按照對話ID分組
+const groupMessagesByConversation = (messages: any[]): Record<string, Message[]> => {
+  const groupedMessages = messages.reduce((acc, msg) => {
+    const chatId = `chat-${msg.conversationId}`;
+    if (!acc[chatId]) {
+      acc[chatId] = [];
+    }
+    
+    acc[chatId].push({
+      id: `msg-${msg.conversationId}-${acc[chatId].length + 1}`,
+      content: msg.message,
+      type: msg.messageType,
+      senderId: `user-${msg.userId}`,
+      timestamp: msg.timestamp,
+      reactions: Object.entries(msg.reactions).map(([type, count]) => ({
+        id: `reaction-${type}-${Date.now()}`,
+        type,
+        count: count as number
+      }))
+    });
+    
+    return acc;
+  }, {} as Record<string, Message[]>);
+
+  return groupedMessages;
+};
+
+// 創建聊天對話
+const createChats = (messages: Record<string, Message[]>, users: User[]): Chat[] => {
+  return Object.entries(messages).map(([chatId, msgs]) => {
+    // 獲取該對話中的所有參與者ID
+    const participantIds = new Set(msgs.map(msg => msg.senderId));
+    
+    return {
+      id: chatId,
+      participants: users.filter(user => participantIds.has(user.id)),
+      messages: msgs,
+      lastMessage: msgs[msgs.length - 1],
+      updatedAt: msgs[msgs.length - 1].timestamp
+    };
+  });
+};
+
+export const mockUsers = extractUsers(chatData.messages);
+export const mockMessages = groupMessagesByConversation(chatData.messages);
+export const mockChats = createChats(mockMessages, mockUsers); 

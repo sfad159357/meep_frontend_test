@@ -66,7 +66,11 @@ const nextConfig = {
   // 其他 Next.js 配置
   reactStrictMode: true,
   images: {
-    domains: ['localhost'],
+    domains: [
+      'i.pravatar.cc',  // 允許來自 pravatar.cc 的圖片
+      'picsum.photos',   // 允許來自 picsum.photos 的圖片
+      'localhost'
+    ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
