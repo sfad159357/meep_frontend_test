@@ -1,36 +1,51 @@
 import { useChatStore } from '@/store/chatStore';
 import { UserInfo } from '../user-info/UserInfo';
 import { format } from 'date-fns';
-import Link from 'next/link';
 import { Chat, User } from '@/types';
+import { useState } from 'react';
+import { Modal } from '../modal/Modal';
+import { ChatRoom } from '../chat-room/ChatRoom';
+
 export const ChatList = () => {
-  const { chats, currentUser, selectedChatId } = useChatStore();
+  const { chats, currentUser, selectedChatId, setSelectedChat } = useChatStore();
+  const [selectedChat, setSelectedChatState] = useState<string | null>(null);
+
+  const handleChatClick = (chatId: string) => {
+    setSelectedChat(chatId);
+    setSelectedChatState(chatId);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedChatState(null);
+  };
 
   return (
-    <ul className="divide-y divide-gray-200 rounded-lg bg-white shadow overflow-hidden">
-      {chats.map((chat: Chat) => {
-        const otherParticipant = chat.participants.find(
-          (p: User) => p.id !== currentUser?.id
-        );
+    <>
+      <ul className="divide-y divide-gray-200 rounded-lg bg-white shadow overflow-hidden">
+        {chats.map((chat: Chat) => {
+          const otherParticipant = chat.participants.find(
+            (p: User) => p.id !== currentUser?.id
+          );
 
-        if (!otherParticipant) return null;
+          if (!otherParticipant) return null;
 
-        return (
-          <li 
-            key={chat.id}
-            className={`${selectedChatId === chat.id ? 'bg-primary-50' : ''}`}
-          >
-            <div className="p-4">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <UserInfo user={otherParticipant} size="md" showName={false} />
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <Link
-                    href={`/chat/${chat.id}`}
-                    className="block hover:bg-gray-50 -m-4 p-4"
-                  >
+          const isSelected = selectedChatId === chat.id;
+
+          return (
+            <li 
+              key={chat.id}
+              className={`relative ${isSelected ? 'bg-primary-50' : ''}`}
+            >
+              <button
+                onClick={() => handleChatClick(chat.id)}
+                className="w-full text-left block p-4 hover:bg-gray-50 transition-colors duration-200"
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <UserInfo user={otherParticipant} size="md" showName={false} />
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-medium text-gray-900 truncate">
                         {otherParticipant.name}
@@ -51,13 +66,28 @@ export const ChatList = () => {
                         )}
                       </p>
                     )}
-                  </Link>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+                
+                {/* Unread indicator - 可以之後實作 */}
+                {false && (
+                  <span className="absolute right-4 top-4 h-2 w-2 rounded-full bg-primary-500" />
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      <Modal
+        isOpen={!!selectedChat}
+        onClose={handleCloseModal}
+        title="Chat"
+      >
+        {selectedChat && (
+          <ChatRoom chatId={selectedChat} />
+        )}
+      </Modal>
+    </>
   );
 }; 
