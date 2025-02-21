@@ -62,8 +62,8 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
             className={`
               rounded-lg 
               ${isCurrentUser 
-                ? 'bg-primary-500 text-white' 
-                : 'bg-gray-100 text-gray-900'
+                ? 'bg-primary-500 text-white dark:bg-primary-600' 
+                : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
               }
               ${message.type === 'image' ? 'p-0 bg-transparent shadow-lg' : 'px-4 py-2'} 
             `}
@@ -111,18 +111,18 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
                 const reactionCount = message.reactions.filter(r => r.type === type).length;
                 const ReactionIcon = hasReacted ? SolidIcon : Icon;
                 const iconColor = type === 'love' 
-                  ? 'text-red-500' 
+                  ? 'text-red-500 dark:text-red-400' 
                   : type === 'laugh'
-                  ? 'text-yellow-500'
+                  ? 'text-yellow-500 dark:text-yellow-400'
                   : hasReacted 
-                  ? 'text-primary-500' 
-                  : 'text-gray-500';
+                  ? 'text-primary-500 dark:text-primary-400' 
+                  : 'text-gray-500 dark:text-gray-400';
                 
                 return (
                   <button
                     key={type}
                     onClick={() => handleReaction(type as 'like' | 'love' | 'laugh')}
-                    className={`p-1 rounded-full hover:bg-gray-100 flex items-center gap-1 ${iconColor} dark:hover:bg-gray-700`}
+                    className={`p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-1 ${iconColor}`}
                   >
                     <ReactionIcon className="w-4 h-4" />
                     {reactionCount > 0 && (

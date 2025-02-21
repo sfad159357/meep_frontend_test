@@ -23,7 +23,7 @@ export const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-90 transition-opacity" />
         </Transition>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -38,15 +38,15 @@ export const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <DialogPanel className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-2xl h-[80vh]">
+              <DialogPanel className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-2xl h-[80vh]">
                 {title && (
-                  <div className="absolute top-0 left-0 right-0 bg-white border-b px-4 py-3 flex justify-between items-center z-10">
-                    <DialogTitle as="h3" className="text-lg font-semibold text-gray-900">
+                  <div className="absolute top-0 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex justify-between items-center z-10">
+                    <DialogTitle as="h3" className="text-lg font-semibold text-gray-900 dark:text-white">
                       {title}
                     </DialogTitle>
                     <button
                       type="button"
-                      className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="rounded-md bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                       onClick={onClose}
                     >
                       <span className="sr-only">Close</span>
