@@ -31,8 +31,9 @@ A modern real-time chat application built with Next.js, TypeScript, and Tailwind
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd project_b
+git clone https://github.com/sfad159357/meep_frontend_test.git"
+cd meep_frontend_test
+
 ```
 
 2. Install dependencies:
