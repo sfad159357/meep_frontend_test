@@ -44,31 +44,52 @@ export const MessageInput = ({ chatId }: MessageInputProps) => {
     }
   };
 
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !currentUser) return;
+    if (!file || !currentUser || isSubmitting) return;
 
-    const imageUrl = URL.createObjectURL(file);
+    try {
+      setIsSubmitting(true);
+      
+      // Create a promise to handle image loading
+      const imageUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            resolve(event.target.result as string);
+          } else {
+            reject(new Error('Failed to load image'));
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
 
-    addMessage(
-      chatId,
-      {
-        content: imageUrl,
-        type: 'image',
-        senderId: currentUser.id,
-        timestamp: Date.now(),
-        reactions: [],
-      },
-      'image'
-    );
+      await addMessage(
+        chatId,
+        {
+          content: imageUrl,
+          type: 'image',
+          senderId: currentUser.id,
+          timestamp: Date.now(),
+          reactions: [],
+        },
+        'image'
+      );
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="border-t p-4">
+    <div className="border-t p-4 bg-white dark:bg-gray-800 dark:border-gray-700">
       <div className="flex items-end space-x-2">
         <div className="flex-1 min-w-0">
           <textarea
@@ -77,7 +98,7 @@ export const MessageInput = ({ chatId }: MessageInputProps) => {
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type a message..."
-            className="p-2 w-full resize-none rounded-lg border-gray-300 focus:border-primary-500 focus:ring-primary-500 min-h-[2.5rem] max-h-32 py-2"
+            className="p-2 w-full resize-none rounded-lg border-gray-300 dark:border-gray-600 focus:border-primary-500 focus:ring-primary-500 min-h-[2.5rem] max-h-32 py-2 bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
             rows={1}
             disabled={isSubmitting}
           />
@@ -87,7 +108,7 @@ export const MessageInput = ({ chatId }: MessageInputProps) => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="inline-flex items-center p-2 rounded-full text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
             disabled={isSubmitting}
           >
             <PhotoIcon className="h-6 w-6" />
@@ -99,8 +120,8 @@ export const MessageInput = ({ chatId }: MessageInputProps) => {
             disabled={!message.trim() || isSubmitting}
             className={`inline-flex items-center p-2 rounded-full 
               ${message.trim() && !isSubmitting
-                ? 'text-primary-500 hover:text-primary-600 hover:bg-primary-50'
-                : 'text-gray-400'
+                ? 'text-primary-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20'
+                : 'text-gray-400 dark:text-gray-500'
               } focus:outline-none focus:ring-2 focus:ring-primary-500`}
           >
             <PaperAirplaneIcon className="h-6 w-6" />
@@ -117,7 +138,7 @@ export const MessageInput = ({ chatId }: MessageInputProps) => {
       />
       
       {isSubmitting && (
-        <p className="mt-2 text-xs text-gray-500">Sending...</p>
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">Sending...</p>
       )}
     </div>
   );

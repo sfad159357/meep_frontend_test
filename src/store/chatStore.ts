@@ -72,36 +72,38 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
   
   addMessage: async (chatId: string, message: Omit<Message, 'id'>, type: 'text' | 'image') => {
     try {
-      // 防止重複添加
       set((state) => {
         const chat = state.chats.find((c) => c.id === chatId);
         if (!chat) return state;
 
-        // 檢查最後一條消息是否完全相同（防止重複）
-        const lastMessage = chat.messages[chat.messages.length - 1];
-        if (lastMessage && 
-            lastMessage.content === message.content && 
-            lastMessage.type === message.type &&
-            lastMessage.senderId === message.senderId &&
-            Date.now() - lastMessage.timestamp < 1000) { // 1秒內的相同消息視為重複
-          return state;
+        // Only check for duplicates if it's a text message
+        if (type === 'text') {
+          const lastMessage = chat.messages[chat.messages.length - 1];
+          if (lastMessage && 
+              lastMessage.content === message.content && 
+              lastMessage.type === message.type &&
+              lastMessage.senderId === message.senderId &&
+              Date.now() - lastMessage.timestamp < 1000) {
+            return state;
+          }
         }
 
-        // 如果不是重複消息，則添加
         const newMessage = {
           id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          ...message
+          ...message,
+          type // Ensure type is set correctly
+        };
+
+        const updatedChat = {
+          ...chat,
+          messages: [...chat.messages, newMessage],
+          updatedAt: Date.now()
         };
 
         return {
           ...state,
           chats: state.chats.map((c) =>
-            c.id === chatId
-              ? {
-                  ...c,
-                  messages: [...c.messages, newMessage],
-                }
-              : c
+            c.id === chatId ? updatedChat : c
           ),
         };
       });
@@ -112,56 +114,75 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
   },
   
   addReaction: async (chatId: string, messageId: string, reaction: Omit<Reaction, 'id'>) => {
+    const reactionId = `reaction-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const originalState = get();
+
+    // Optimistic update
+    set((state: ChatStore) => ({
+      chats: state.chats.map((chat: Chat) => {
+        if (chat.id === chatId) {
+          return {
+            ...chat,
+            messages: chat.messages.map((msg: Message) => {
+              if (msg.id === messageId) {
+                // Check if reaction already exists
+                const existingReaction = msg.reactions.find(
+                  r => r.userId === reaction.userId && r.type === reaction.type
+                );
+                if (existingReaction) return msg;
+
+                return {
+                  ...msg,
+                  reactions: [...msg.reactions, { ...reaction, id: reactionId }],
+                };
+              }
+              return msg;
+            }),
+          };
+        }
+        return chat;
+      }),
+    }));
+
     try {
       await api.addReaction(chatId, messageId, reaction);
-      set((state: ChatStore) => ({
-        chats: state.chats.map((chat: Chat) => {
-          if (chat.id === chatId) {
-            return {
-              ...chat,
-              messages: chat.messages.map((msg: Message) => {
-                if (msg.id === messageId) {
-                  return {
-                    ...msg,
-                    reactions: [...msg.reactions, { ...reaction, id: `reaction-${Date.now()}` }],
-                  };
-                }
-                return msg;
-              }),
-            };
-          }
-          return chat;
-        }),
-      }));
     } catch (error) {
-      set({ error: 'Failed to add reaction' });
+      // Rollback on error
+      set({ chats: originalState.chats, error: 'Failed to add reaction' });
+      throw error;
     }
   },
   
   removeReaction: async (chatId: string, messageId: string, reactionId: string) => {
+    const originalState = get();
+
+    // Optimistic update
+    set((state: ChatStore) => ({
+      chats: state.chats.map((chat: Chat) => {
+        if (chat.id === chatId) {
+          return {
+            ...chat,
+            messages: chat.messages.map((msg: Message) => {
+              if (msg.id === messageId) {
+                return {
+                  ...msg,
+                  reactions: msg.reactions.filter((r: Reaction) => r.id !== reactionId),
+                };
+              }
+              return msg;
+            }),
+          };
+        }
+        return chat;
+      }),
+    }));
+
     try {
       await api.removeReaction(chatId, messageId, reactionId);
-      set((state: ChatStore) => ({
-        chats: state.chats.map((chat: Chat) => {
-          if (chat.id === chatId) {
-            return {
-              ...chat,
-              messages: chat.messages.map((msg: Message) => {
-                if (msg.id === messageId) {
-                  return {
-                    ...msg,
-                    reactions: msg.reactions.filter((r: Reaction) => r.id !== reactionId),
-                  };
-                }
-                return msg;
-              }),
-            };
-          }
-          return chat;
-        }),
-      }));
     } catch (error) {
-      set({ error: 'Failed to remove reaction' });
+      // Rollback on error
+      set({ chats: originalState.chats, error: 'Failed to remove reaction' });
+      throw error;
     }
   },
 })); 

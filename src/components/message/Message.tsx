@@ -17,6 +17,7 @@ interface MessageProps {
 export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
   const { addReaction, removeReaction } = useChatStore();
   const selectedChatId = useChatStore((state: ChatStore) => state.selectedChatId);
+  const currentUser = useChatStore((state: ChatStore) => state.currentUser);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const reactionIcons = {
@@ -26,12 +27,12 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
   };
 
   const handleReaction = async (type: 'like' | 'love' | 'laugh') => {
-    if (!selectedChatId || isSubmitting) return;
+    if (!selectedChatId || isSubmitting || !currentUser) return;
     
     try {
       setIsSubmitting(true);
       const existingReaction = message.reactions.find(
-        (r) => r.userId === sender.id && r.type === type
+        (r) => r.userId === currentUser.id && r.type === type
       );
 
       if (existingReaction) {
@@ -39,7 +40,7 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
       } else {
         await addReaction(selectedChatId, message.id, {
           type,
-          userId: sender.id,
+          userId: currentUser.id,
         });
       }
     } finally {
@@ -71,7 +72,7 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
             {message.type === 'text' && <p>{message.content}</p>}
             
             {message.type === 'image' && (
-              <div className="relative inline-block max-w-md">
+              <div className="relative max-w-md">
                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-transparent rounded-t-lg pointer-events-none"></div>
                 <Image
                   src={message.content}
@@ -106,7 +107,7 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
             <div className="flex gap-1">
               {Object.entries(reactionIcons).map(([type, { outline: Icon, solid: SolidIcon }]) => {
                 const hasReacted = message.reactions.some(
-                  (r) => r.type === type && r.userId === sender.id
+                  (r) => r.type === type && r.userId === currentUser?.id
                 );
                 const reactionCount = message.reactions.filter(r => r.type === type).length;
                 const ReactionIcon = hasReacted ? SolidIcon : Icon;
@@ -123,6 +124,7 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
                     key={type}
                     onClick={() => handleReaction(type as 'like' | 'love' | 'laugh')}
                     className={`p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-1 ${iconColor}`}
+                    disabled={isSubmitting}
                   >
                     <ReactionIcon className="w-4 h-4" />
                     {reactionCount > 0 && (
