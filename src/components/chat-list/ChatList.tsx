@@ -23,9 +23,9 @@ export const ChatList = () => {
     <>
       <ul className="divide-y divide-gray-200 dark:divide-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow overflow-hidden">
         {chats.map((chat: Chat) => {
-          const otherParticipant = chat.participants.find(
-            (p: User) => p.id !== currentUser?.id
-          );
+          const otherParticipant = chat.lastMessage 
+            ? chat.participants.find((p: User) => p.id === chat.lastMessage?.senderId)
+            : chat.participants.find((p: User) => p.id !== currentUser?.id);
 
           if (!otherParticipant) return null;
 

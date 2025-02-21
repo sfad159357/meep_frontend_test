@@ -39,7 +39,7 @@ export const api = {
     // 更新對話的最後一條消息
     const chat = mockChats.find(c => c.id === conversationId);
     if (chat) {
-      chat.lastMessage = newMessage;
+      chat.lastMessage = newMessage;  // 直接使用整個 newMessage 對象
       chat.updatedAt = newMessage.timestamp;
     }
 

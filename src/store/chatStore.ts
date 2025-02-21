@@ -102,6 +102,7 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
         const updatedChat = {
           ...chat,
           messages: [...chat.messages, newMessage],
+          lastMessage: newMessage,
           updatedAt: Date.now()
         };
 
