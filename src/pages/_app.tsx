@@ -4,10 +4,11 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { getTheme } from '@/styles/theme';
 import { createContext, useContext, useMemo, useState, useEffect } from 'react';
-import { PaletteMode, useMediaQuery } from '@mui/material';
+import { PaletteMode, useMediaQuery, Avatar } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { useChatStore } from '@/store/chatStore';
 
 // Create theme context
 export const ColorModeContext = createContext({ 
@@ -16,11 +17,9 @@ export const ColorModeContext = createContext({
 });
 
 export default function App({ Component, pageProps }: AppProps) {
-  // Check system preference
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  
-  // Initialize mode from localStorage or system preference
   const [mode, setMode] = useState<PaletteMode>('light');
+  const currentUser = useChatStore(state => state.currentUser);
   
   useEffect(() => {
     const savedMode = localStorage.getItem('theme-mode') as PaletteMode;
@@ -47,7 +46,6 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const theme = useMemo(() => getTheme(mode), [mode]);
 
-  // Apply dark mode class to body
   useEffect(() => {
     document.body.classList.remove('light', 'dark');
     document.body.classList.add(mode);
@@ -57,7 +55,20 @@ export default function App({ Component, pageProps }: AppProps) {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline enableColorScheme />
-        <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 1000 }}>
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 1000 }} 
+             className="flex items-center gap-4">
+          {currentUser && (
+            <div className="flex items-center gap-2">
+              <Avatar 
+                src={currentUser.avatar} 
+                alt={currentUser.name}
+                className="w-8 h-8"
+              />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {currentUser.name}
+              </span>
+            </div>
+          )}
           <IconButton 
             onClick={colorMode.toggleColorMode} 
             color="inherit"

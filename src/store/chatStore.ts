@@ -23,8 +23,8 @@ export interface ChatStore {
 // Mock current user for demo
 const mockUser: User = {
   id: 'user-1',
-  name: 'John Doe',
-  avatar: '/assets/avatars/user-1.jpg',
+  name: 'Alice',
+  avatar: 'https://i.pravatar.cc/150?img=1',
 };
 
 // Mock initial chats for demo
