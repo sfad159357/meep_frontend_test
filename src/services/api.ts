@@ -1,4 +1,4 @@
-import { Chat, Message } from '@/types';
+import { Chat, Message, ReactionType } from '@/types';
 import { mockChats, mockMessages } from './mockData';
 
 // 模擬 API 延遲
@@ -22,7 +22,12 @@ export const api = {
     await delay(200);
     const newMessage = {
       ...message,
-      id: `msg-${Date.now()}`,
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      reactions: {
+        like: 0,
+        love: 0,
+        laugh: 0
+      }
     };
 
     // 更新 mock 數據
@@ -42,26 +47,22 @@ export const api = {
   },
 
   // 添加反應
-  async addReaction(conversationId: string, messageId: string, reaction: { type: string; userId: string }): Promise<void> {
+  async addReaction(conversationId: string, messageId: string, reaction: { type: ReactionType; count: number }): Promise<void> {
     await delay(200);
     const messages = mockMessages[conversationId];
     const message = messages?.find(m => m.id === messageId);
     if (message) {
-      message.reactions.push({
-        id: `reaction-${Date.now()}`,
-        type: reaction.type as any,
-        userId: reaction.userId,
-      });
+      message.reactions[reaction.type] = message.reactions[reaction.type] + 1;
     }
   },
 
   // 移除反應
-  async removeReaction(conversationId: string, messageId: string, reactionId: string): Promise<void> {
+  async removeReaction(conversationId: string, messageId: string, reactionType: ReactionType): Promise<void> {
     await delay(200);
     const messages = mockMessages[conversationId];
     const message = messages?.find(m => m.id === messageId);
-    if (message) {
-      message.reactions = message.reactions.filter(r => r.id !== reactionId);
+    if (message && message.reactions[reactionType] > 0) {
+      message.reactions[reactionType] = message.reactions[reactionType] - 1;
     }
   },
 }; 

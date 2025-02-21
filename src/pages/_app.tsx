@@ -57,7 +57,7 @@ export default function App({ Component, pageProps }: AppProps) {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline enableColorScheme />
-        <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1000 }}>
+        <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 1000 }}>
           <IconButton 
             onClick={colorMode.toggleColorMode} 
             color="inherit"

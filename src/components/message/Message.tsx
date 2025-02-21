@@ -1,4 +1,4 @@
-import { Message as MessageType, User } from '@/types';
+import { Message as MessageType, User, Reactions } from '@/types';
 import { UserInfo } from '../user-info/UserInfo';
 import { format } from 'date-fns';
 import Image from 'next/image';
@@ -20,27 +20,34 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
   const currentUser = useChatStore((state: ChatStore) => state.currentUser);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Initialize reactions if they don't exist
+  if (!message.reactions) {
+    message.reactions = {
+      like: 0,
+      love: 0,
+      laugh: 0
+    };
+  }
+
   const reactionIcons = {
     like: { outline: HandThumbUpIcon, solid: HandThumbUpIconSolid },
     love: { outline: HeartIcon, solid: HeartIconSolid },
     laugh: { outline: FaceSmileIcon, solid: FaceSmileIconSolid },
-  };
+  } as const;
 
-  const handleReaction = async (type: 'like' | 'love' | 'laugh') => {
+  const handleReaction = async (type: keyof Reactions) => {
     if (!selectedChatId || isSubmitting || !currentUser) return;
     
     try {
       setIsSubmitting(true);
-      const existingReaction = message.reactions.find(
-        (r) => r.userId === currentUser.id && r.type === type
-      );
-
-      if (existingReaction) {
-        await removeReaction(selectedChatId, message.id, existingReaction.id);
+      const currentCount = message.reactions[type];
+      
+      if (currentCount > 0) {
+        await removeReaction(selectedChatId, message.id, type);
       } else {
         await addReaction(selectedChatId, message.id, {
           type,
-          userId: currentUser.id,
+          count: 1  // Always increment by 1
         });
       }
     } finally {
@@ -105,11 +112,9 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
             </span>
             
             <div className="flex gap-1">
-              {Object.entries(reactionIcons).map(([type, { outline: Icon, solid: SolidIcon }]) => {
-                const hasReacted = message.reactions.some(
-                  (r) => r.type === type && r.userId === currentUser?.id
-                );
-                const reactionCount = message.reactions.filter(r => r.type === type).length;
+              {(Object.entries(reactionIcons) as [keyof Reactions, typeof reactionIcons[keyof Reactions]][]).map(([type, { outline: Icon, solid: SolidIcon }]) => {
+                const count = message.reactions[type];
+                const hasReacted = count > 0;
                 const ReactionIcon = hasReacted ? SolidIcon : Icon;
                 const iconColor = type === 'love' 
                   ? 'text-red-500 dark:text-red-400' 
@@ -122,13 +127,13 @@ export const Message = ({ message, sender, isCurrentUser }: MessageProps) => {
                 return (
                   <button
                     key={type}
-                    onClick={() => handleReaction(type as 'like' | 'love' | 'laugh')}
+                    onClick={() => handleReaction(type)}
                     className={`p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-1 ${iconColor}`}
                     disabled={isSubmitting}
                   >
                     <ReactionIcon className="w-4 h-4" />
-                    {reactionCount > 0 && (
-                      <span className="text-xs">{reactionCount}</span>
+                    {count > 0 && (
+                      <span className="text-xs">{count}</span>
                     )}
                   </button>
                 );

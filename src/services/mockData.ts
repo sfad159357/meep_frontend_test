@@ -32,11 +32,7 @@ const groupMessagesByConversation = (messages: any[]): Record<string, Message[]>
       type: msg.messageType,
       senderId: `user-${msg.userId}`,
       timestamp: msg.timestamp,
-      reactions: Object.entries(msg.reactions).map(([type, count]) => ({
-        id: `reaction-${type}-${Date.now()}`,
-        type,
-        count: count as number
-      }))
+      reactions: msg.reactions
     });
     
     return acc;
@@ -61,6 +57,47 @@ const createChats = (messages: Record<string, Message[]>, users: User[]): Chat[]
   });
 };
 
-export const mockUsers = extractUsers(chatData.messages);
-export const mockMessages = groupMessagesByConversation(chatData.messages);
-export const mockChats = createChats(mockMessages, mockUsers); 
+// Convert chat_data messages to our format
+const convertedMessages: { [key: string]: Message[] } = {};
+chatData.messages.forEach((msg: any) => {
+  const conversationId = `chat-${msg.conversationId}`;
+  if (!convertedMessages[conversationId]) {
+    convertedMessages[conversationId] = [];
+  }
+  convertedMessages[conversationId].push({
+    id: `msg-${msg.conversationId}-${msg.timestamp}`,
+    content: msg.message,
+    type: msg.messageType,
+    senderId: `user-${msg.userId}`,
+    timestamp: msg.timestamp,
+    reactions: msg.reactions
+  });
+});
+
+// Sort messages by timestamp
+Object.values(convertedMessages).forEach(messages => {
+  messages.sort((a, b) => a.timestamp - b.timestamp);
+});
+
+export const mockMessages = convertedMessages;
+
+// Convert chat_data conversations to our format
+export const mockChats: Chat[] = chatData.conversations.map((conv: any) => {
+  const conversationId = `chat-${conv.id}`;
+  const conversationMessages = convertedMessages[conversationId] || [];
+  const lastMsg = conversationMessages[conversationMessages.length - 1];
+  
+  return {
+    id: conversationId,
+    participants: conv.participants.map((p: any) => ({
+      id: `user-${p.userId}`,
+      name: p.user,
+      avatar: p.avatar
+    })),
+    messages: conversationMessages,
+    lastMessage: lastMsg,
+    updatedAt: lastMsg ? lastMsg.timestamp : conv.timestamp
+  };
+});
+
+export const mockUsers = extractUsers(chatData.messages); 

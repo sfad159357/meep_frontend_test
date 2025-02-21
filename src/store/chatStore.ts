@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Chat, Message, Reaction, User } from '@/types';
+import { Chat, Message, User, Reactions, ReactionType } from '@/types';
 import { api } from '@/services/api';
 
 export interface ChatStore {
@@ -16,8 +16,8 @@ export interface ChatStore {
     message: Omit<Message, 'id'>, 
     type: 'text' | 'image'
   ) => Promise<void>;
-  addReaction: (chatId: string, messageId: string, reaction: Omit<Reaction, 'id'>) => Promise<void>;
-  removeReaction: (chatId: string, messageId: string, reactionId: string) => Promise<void>;
+  addReaction: (chatId: string, messageId: string, reaction: { type: ReactionType, count: number }) => Promise<void>;
+  removeReaction: (chatId: string, messageId: string, reactionType: ReactionType) => Promise<void>;
 }
 
 // Mock current user for demo
@@ -91,7 +91,12 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
         const newMessage = {
           id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           ...message,
-          type // Ensure type is set correctly
+          type,
+          reactions: {
+            like: 0,
+            love: 0,
+            laugh: 0
+          }
         };
 
         const updatedChat = {
@@ -113,8 +118,7 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
     }
   },
   
-  addReaction: async (chatId: string, messageId: string, reaction: Omit<Reaction, 'id'>) => {
-    const reactionId = `reaction-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  addReaction: async (chatId: string, messageId: string, reaction: { type: ReactionType, count: number }) => {
     const originalState = get();
 
     // Optimistic update
@@ -125,15 +129,13 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
             ...chat,
             messages: chat.messages.map((msg: Message) => {
               if (msg.id === messageId) {
-                // Check if reaction already exists
-                const existingReaction = msg.reactions.find(
-                  r => r.userId === reaction.userId && r.type === reaction.type
-                );
-                if (existingReaction) return msg;
-
+                const currentCount = msg.reactions[reaction.type];
                 return {
                   ...msg,
-                  reactions: [...msg.reactions, { ...reaction, id: reactionId }],
+                  reactions: {
+                    ...msg.reactions,
+                    [reaction.type]: currentCount + 1
+                  }
                 };
               }
               return msg;
@@ -153,7 +155,7 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
     }
   },
   
-  removeReaction: async (chatId: string, messageId: string, reactionId: string) => {
+  removeReaction: async (chatId: string, messageId: string, reactionType: ReactionType) => {
     const originalState = get();
 
     // Optimistic update
@@ -164,9 +166,13 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
             ...chat,
             messages: chat.messages.map((msg: Message) => {
               if (msg.id === messageId) {
+                const currentCount = msg.reactions[reactionType];
                 return {
                   ...msg,
-                  reactions: msg.reactions.filter((r: Reaction) => r.id !== reactionId),
+                  reactions: {
+                    ...msg.reactions,
+                    [reactionType]: Math.max(0, currentCount - 1)
+                  }
                 };
               }
               return msg;
@@ -178,7 +184,7 @@ export const useChatStore = create<ChatStore>((set: (state: Partial<ChatStore> |
     }));
 
     try {
-      await api.removeReaction(chatId, messageId, reactionId);
+      await api.removeReaction(chatId, messageId, reactionType);
     } catch (error) {
       // Rollback on error
       set({ chats: originalState.chats, error: 'Failed to remove reaction' });

@@ -6,10 +6,10 @@ export type User = {
 
 export type ReactionType = 'like' | 'love' | 'laugh';
 
-export type Reaction = {
-  id: string;
-  type: ReactionType;
-  userId: string;
+export type Reactions = {
+  like: number;
+  love: number;
+  laugh: number;
 };
 
 export type MessageType = 'text' | 'image' | 'system';
@@ -20,7 +20,7 @@ export type Message = {
   type: MessageType;
   senderId: string;
   timestamp: number;
-  reactions: Reaction[];
+  reactions: Reactions;
 };
 
 export type Chat = {

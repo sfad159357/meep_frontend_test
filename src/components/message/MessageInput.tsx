@@ -25,7 +25,11 @@ export const MessageInput = ({ chatId }: MessageInputProps) => {
           type: 'text',
           senderId: currentUser.id,
           timestamp: Date.now(),
-          reactions: [],
+          reactions: {
+            like: 0,
+            love: 0,
+            laugh: 0
+          },
         },
         'text'
       );
@@ -72,7 +76,11 @@ export const MessageInput = ({ chatId }: MessageInputProps) => {
           type: 'image',
           senderId: currentUser.id,
           timestamp: Date.now(),
-          reactions: [],
+          reactions: {
+            like: 0,
+            love: 0,
+            laugh: 0
+          },
         },
         'image'
       );
