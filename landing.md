@@ -26,11 +26,3 @@ graph TD
    
 ```
 
-_app.tsx
-└── ThemeProvider
-    └── CssBaseline
-        └── index.tsx (Home)
-            └── Layout.tsx
-                ├── Header
-                └── Main
-                    └── ChatList
