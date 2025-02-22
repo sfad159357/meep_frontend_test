@@ -1,3 +1,8 @@
+Sure, I will update the `README.md` file to include links to the specified markdown files in your repository.
+
+Here is the updated content for your `README.md`:
+
+```markdown
 # Real-time Chat Room Application
 
 A modern chat application built with Next.js, TypeScript, and Tailwind CSS.
@@ -25,17 +30,15 @@ The project includes several documentation files for different aspects:
 
 > **Note**: For markdown files containing mermaid diagrams, it is recommended to use the VS Code extension "Markdown Preview Mermaid Support". Use shortcut Ctrl + Shift + V (Windows) or Cmd + Shift + V (Mac) to preview.
 
-- `checkList.md`: Detailed feature completion checklist and progress tracking
-- `landing.md`: Application initialization and component tree flow documentation
-- `map.md`: Frontend architecture and project structure visualization
-- `theme.md`: Theme system implementation and configuration details
-- `think.md`: Technical decisions and implementation rationale
+- [`checkList.md`](https://github.com/sfad159357/meep_frontend_test/blob/master/checkList.md): Detailed feature completion checklist and progress tracking
+- [`landing.md`](https://github.com/sfad159357/meep_frontend_test/blob/master/landing.md): Application initialization and component tree flow documentation
+- [`map.md`](https://github.com/sfad159357/meep_frontend_test/blob/master/map.md): Frontend architecture and project structure visualization
+- [`theme.md`](https://github.com/sfad159357/meep_frontend_test/blob/master/theme.md): Theme system implementation and configuration details
+- [`think.md`](https://github.com/sfad159357/meep_frontend_test/blob/master/think.md): Technical decisions and implementation rationale
 
 For detailed information about specific aspects, please refer to these documentation files.
 
-
 ## Tech Stack & Design Decisions
-
 
 ## Project Structure
 
@@ -81,10 +84,6 @@ src/
 - Image upload support
 - Reaction management
 
-
-
-
-
 ## Mock API Implementation
 
 ### Endpoints
@@ -92,8 +91,6 @@ src/
 - GET /messages?conversationId={id}
 - POST /conversations/:id/messages/create
 - POST /conversations/:id/messages/:messageId/reactions
-
-
 
 ## Performance Optimizations
 
@@ -113,7 +110,6 @@ src/
 5. Use image optimization
 6. Maintain clean code structure
 
-
 ## Future Improvements
 
 1. Real-time Features
@@ -131,3 +127,6 @@ src/
    - Error handling
    - Performance optimization
    - Group chat support 
+```
+
+You can update your `README.md` file with the above content to include the links to the specified markdown files.
