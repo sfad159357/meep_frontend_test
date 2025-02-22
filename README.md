@@ -1,7 +1,3 @@
-Sure, I will update the `README.md` file to include links to the specified markdown files in your repository.
-
-Here is the updated content for your `README.md`:
-
 ```markdown
 # Real-time Chat Room Application
 
