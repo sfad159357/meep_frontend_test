@@ -1,4 +1,4 @@
-```markdown
+
 # Real-time Chat Room Application
 
 A modern chat application built with Next.js, TypeScript, and Tailwind CSS.
