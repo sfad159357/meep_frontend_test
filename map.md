@@ -7,7 +7,7 @@ graph TD
         
         subgraph Pages
             A1[index.tsx - Chat List]
-            A2[chat/[id].tsx - Chat Room]
+            A2[chat/\[id\].tsx - Chat Room]
         end
 
         subgraph Components
